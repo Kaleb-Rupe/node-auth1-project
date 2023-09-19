@@ -21,8 +21,6 @@ const cors = require("cors");
 
 const server = express();
 
-server.use(helmet());
-server.use(express.json());
 server.use(
   session({
     name: "chocolatechip",
@@ -30,7 +28,8 @@ server.use(
     cookie: {
       maxAge: 1000 * 60 * 60,
       secure: false,
-      httpOnly: false,
+      httpOnly: true,
+      // sameSite: "none"
     },
     rolling: true,
     resave: false,
@@ -44,6 +43,8 @@ server.use(
     }),
   })
 );
+server.use(helmet());
+server.use(express.json());
 server.use(cors());
 
 server.use("/api/users", usersRouter);
