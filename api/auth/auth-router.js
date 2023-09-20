@@ -13,18 +13,15 @@ router.post(
   "/register",
   checkPasswordLength,
   checkUsernameFree,
-  async (req, res, next) => {
-    try {
-      const { username, password } = req.body;
-      const hash = bcrypt.hashSync(password, 14); // 2 ^ 14
-      const newUser = { username, password: hash };
-      const result = await User.add(newUser);
-      res.status(201).json({
-        message: `Nice to have you ${result.username}`,
-      });
-    } catch (err) {
-      next(err);
-    }
+  (req, res, next) => {
+    const { username, password } = req.body;
+    const hash = bcrypt.hashSync(password, 8); // 2 ^ 14
+
+    User.add({ username, password: hash })
+      .then((saved) => {
+        res.status(200).json(saved);
+      })
+      .catch(next);
   }
 );
 /**
@@ -75,7 +72,17 @@ router.post("/login", checkUsernameExists, (req, res, next) => {
   }
  */
 router.get("/logout", (req, res, next) => {
-  res.json("logout");
+  if (req.session.user) {
+    req.session.destroy((err) => {
+      if (err) {
+        next(err);
+      } else {
+        res.json({ message: "logged out" });
+      }
+    });
+  } else {
+    res.json({ message: "no session" });
+  }
 });
 /**
   3 [GET] /api/auth/logout
